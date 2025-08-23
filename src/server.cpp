@@ -1,6 +1,8 @@
 #include "TCPServer.hpp"
 #include "Epoll.hpp"
 
+#define PORT "3490"
+
 void epoll_callback(const struct epoll_event& event, Epoll* epoll, TCPServer* conn){
     // New connection on server socket to accept
     if(event.data.fd == conn->getSock()) {
@@ -14,8 +16,7 @@ void epoll_callback(const struct epoll_event& event, Epoll* epoll, TCPServer* co
         }
         
         inet_ntop(their_addr.ss_family,
-                    conn->get_in_addrs((struct sockaddr*)&their_addr),
-                    s, sizeof s);
+                    conn->getInAddrs((struct sockaddr*)&their_addr),s, sizeof s);
         printf("conn: got connection from %s\n", s);
         
         // Add new client to epoll
@@ -44,7 +45,7 @@ int main(){
     vector<struct epoll_event> events;
     struct epoll_event server_event;
 
-    TCPServer server("3490", AF_INET);
+    TCPServer server(PORT, AF_INET, false);
 
     server_event.data.fd = server.getSock();
     server_event.events = EPOLLIN;

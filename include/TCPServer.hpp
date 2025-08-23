@@ -1,19 +1,28 @@
 
 #include "TCPConnection.hpp"
+#include <vector>
 
 #define BACKLOG 10
 
 class TCPServer : public TCPConnection {
+private:
+    std::vector<uint8_t> inputbuf;
+    std::vector<uint8_t> outputbuf;
 
 private:
     int32_t establishEndpoint(int sockfd, struct addrinfo *p) override;//Wrapper to syscall bind()
     void reapDeadProcesses(struct sigaction& sa);//Makes sure to kill any forked processes
     void sigchld_handler(int s);
+    void buf_append(std::vector<uint8_t>& buf, const void* data, size_t len);//Inserts data and its len into the buffer
+    void buf_remove(std::vector<uint8_t>& buf, size_t len);//Remoes len amt of bytes from the buffer
+    bool process_request();//Will try to read one request from inputbuf
 
 public:
     TCPServer(const char* serverPort, int sock_family, bool block = true);//Sets sockfd to our server file descriptor. Unconnected when instantiated
     ~TCPServer() override;
     void queueConns();//Calls listen and queues any incoming connections, exits on fail
-    int32_t acceptConn(struct sockaddr* clientaddr);//Accepts one connection from the connection queue, returns -1 on fail, does block I/O
+    int32_t acceptConn(struct sockaddr* clientaddr);//Accepts one connection from the connection queue, returns -1 on fail, does not blocking I/O
     int32_t handleRequest(int socketfd);//Receives msg and sends ACK 
+    bool nonBlockSend(int socketfd, char* buffer, size_t buffersize);//Sends message without blocking
+    bool nonBlockRecv(int socketfd);//Receives message without blocking
 };

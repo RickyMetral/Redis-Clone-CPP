@@ -84,7 +84,7 @@ int TCPConnection::getSock() const{
 }
 
 // get sockaddr, IPv4 or IPv6:
-void* TCPConnection::get_in_addrs(struct sockaddr *sa)
+void* TCPConnection::getInAddrs(struct sockaddr *sa)
 {
     if (sa->sa_family == AF_INET) {
         return &(((struct sockaddr_in*)sa)->sin_addr);

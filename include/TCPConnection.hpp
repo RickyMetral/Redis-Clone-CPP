@@ -20,7 +20,6 @@ class TCPConnection{
 protected:
     int sockfd;
     addrinfo hints;
-    bool block;
     bool blocking;
 
 protected:
@@ -33,7 +32,7 @@ protected:
 
 public:
     int getSock() const;
-    void* get_in_addrs(struct sockaddr *sa);//Returns unknown sockaddr (IPV4 or IPV6)
+    void* getInAddrs(struct sockaddr *sa);//Returns unknown sockaddr (IPV4 or IPV6)
     int32_t sendMsg(int socketfd, const void* message, size_t msglen);//Ensures to send all the bytes unless an error occurs.
     int32_t recvMsg(int socketfd, char* buffer, size_t buffersize);//Receives all the data sent. Returns number of bytes received. 
     bool sendAll(int socketfd, const void* message, size_t msglen);//Ensures to send all the bytes unless an error occurs. Returns -1 on fail, 0 on success
