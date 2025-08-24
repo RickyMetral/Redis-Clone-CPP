@@ -103,8 +103,8 @@ int32_t TCPServer::handleRequest(int socketfd){
     //Write the buffer to the client
     return this->writeAll(socketfd, writebuf, len + 4);
 }
-
-bool TCPServer::process_request(){
+//TODO: Add support for pipelining requests
+bool TCPServer::process_one_request(){
     if(this->inputbuf.size() < 4){
         return false;
     }
@@ -124,34 +124,35 @@ bool TCPServer::process_request(){
     const char* request = reinterpret_cast<const char*>(inputbuf.data() + 4);
 
     std::cout << "Received Message: " << request << "\n";
+
+    sendMsg(this->sockfd, "Received Message", 16);
     return true;
 } 
 
-//TODO FINISH FUNCTION
-bool TCPServer::nonBlockSend(int socketfd, char* msg, size_t msglen){
+bool TCPServer::send_outputbuf(int socketfd){
     if(this->blocking){
         std::cerr << "Called non-blocking send on a blocking socket" << std::endl;
         return false;
     }
 
-    int32_t bytes_sent = write(socketfd, msg, msglen);
+    int32_t bytes_sent = write(socketfd, this->outputbuf.data(), this->outputbuf.size());
+
     if(bytes_sent < 0){
         std::cerr << "Error sending to socket" << socketfd << "\n";
         return false;
     }
     buf_remove(this->outputbuf, bytes_sent);
+
     return true;
 }
 
-//TODO Add support for piplelined Messages
-bool TCPServer::nonBlockRecv(int socketfd){
+bool TCPServer::recv_inputbuf(int socketfd, char* buf, size_t buflen){
     if(this->blocking){
         std::cerr << "Called non-blocking recv on a blocking socket" << std::endl;
         return false;
     }
-    uint8_t buf[MAX_MSGLEN];
 
-    int32_t bytes_recv  = read(socketfd, buf, MAX_MSGLEN);
+    int32_t bytes_recv = read(socketfd, buf, buflen);
 
     if(bytes_recv < 0){
         std::cerr << "Error receiving from socket" << socketfd << "\n";
@@ -165,7 +166,7 @@ bool TCPServer::nonBlockRecv(int socketfd){
     //Appending received bytes to input buffer
     inputbuf.insert(inputbuf.end(), buf, buf + bytes_recv);
 
-    return this->process_request();
+    return this->process_one_request();
 }
 
 void TCPServer::buf_append(std::vector<uint8_t>& buf, const void* data, size_t len) {

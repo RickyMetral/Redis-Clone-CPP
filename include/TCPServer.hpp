@@ -15,7 +15,7 @@ private:
     void sigchld_handler(int s);
     void buf_append(std::vector<uint8_t>& buf, const void* data, size_t len);//Inserts data and its len into the buffer
     void buf_remove(std::vector<uint8_t>& buf, size_t len);//Remoes len amt of bytes from the buffer
-    bool process_request();//Will try to read one request from inputbuf
+    bool process_one_request();//Will try to read one request from inputbuf for non-blocking sockets
 
 public:
     TCPServer(const char* serverPort, int sock_family, bool block = true);//Sets sockfd to our server file descriptor. Unconnected when instantiated
@@ -23,6 +23,6 @@ public:
     void queueConns();//Calls listen and queues any incoming connections, exits on fail
     int32_t acceptConn(struct sockaddr* clientaddr);//Accepts one connection from the connection queue, returns -1 on fail, does not blocking I/O
     int32_t handleRequest(int socketfd);//Receives msg and sends ACK 
-    bool nonBlockSend(int socketfd, char* buffer, size_t buffersize);//Sends message without blocking
-    bool nonBlockRecv(int socketfd);//Receives message without blocking
+    bool send_outputbuf(int socketfd);//Reads from outputbuf and sends it to socketfd
+    bool recv_inputbuf(int socketfd, char* buf, size_t buflen);//Receives from socketfd, appends to inputbuf, processes requests
 };
