@@ -58,11 +58,11 @@ Example usage:
         template <typename Userdata>
         bool mainloop(void(*callback)(const struct epoll_event&, Epoll*, Userdata*), Userdata* userdata = nullptr, int32_t timeout = -1){
             struct epoll_event ready_events[MAX_EVENTS];
-            int nfds = epoll_wait(epoll_fd, ready_events, MAX_EVENTS, timeout);
+            int32_t nfds = epoll_wait(epoll_fd, ready_events, MAX_EVENTS, timeout);
 
             if(nfds > 0){
                 //Iterates over every fd that is ready
-                for(int i = 0; i < nfds; i++){
+                for(int32_t i = 0; i < nfds; i++){
                     //If fd is ready to be deleted
                     if(ready_events[i].events & EPOLLHUP || ready_events[i].events & EPOLLERR){
                         //If removefd fails
@@ -94,7 +94,7 @@ Example usage:
         template <typename Userdata>
         bool mainloop(void(*callback)(const struct epoll_event*, Epoll*, const int32_t&, Userdata*), Userdata* userdata = nullptr, int32_t timeout = -1){
             struct epoll_event ready_events[MAX_EVENTS];
-            int nfds = epoll_wait(epoll_fd, ready_events, MAX_EVENTS, timeout);
+            int32_t nfds = epoll_wait(epoll_fd, ready_events, MAX_EVENTS, timeout);
             //We have fd's ready to be iterated over
             if(nfds > 0){
                 callback(ready_events, this, nfds, userdata); 

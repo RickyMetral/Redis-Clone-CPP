@@ -25,7 +25,7 @@ TCPClient::~TCPClient(){
     std::cout << "Client Destructor Called" << std::endl;
 }
 
-int TCPClient::establishEndpoint(int socketfd, struct addrinfo *p){
+int32_t TCPClient::establishEndpoint(int socketfd, struct addrinfo *p){
     return connect(socketfd, p->ai_addr, p->ai_addrlen);
 }
 

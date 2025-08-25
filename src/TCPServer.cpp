@@ -2,7 +2,7 @@
 #include "TCPServer.hpp"
 
 
-TCPServer::TCPServer(const char* serverPort, int sock_family, bool block) : TCPConnection(sock_family, AI_PASSIVE, block){
+TCPServer::TCPServer(const char* serverPort, int32_t sock_family, bool block) : TCPConnection(sock_family, AI_PASSIVE, block){
     struct sigaction sa;
     if(this->initSocket(NULL, serverPort) <= -1){
         std::cerr << "InitSocket Failed\n";
@@ -35,18 +35,18 @@ void TCPServer::reapDeadProcesses(struct sigaction& sa){
 
 }
 
-void TCPServer::sigchld_handler(int s){
-    (void)s; // quiet unused variable warning
+void TCPServer::sigchld_handler(int32_t s){
+    (void) s; // quiet unused variable warning
 
     // waitpid() might overwrite errno, so we save and restore it:
-    int saved_errno = errno;
+    int32_t  saved_errno = errno;
 
     while(waitpid(-1, NULL, WNOHANG) > 0);
 
     errno = saved_errno;
 }
 
-int32_t TCPServer::establishEndpoint(int socketfd, struct addrinfo *p){
+int32_t TCPServer::establishEndpoint(int32_t socketfd, struct addrinfo *p){
     return bind(socketfd, p->ai_addr, p->ai_addrlen);
 }
 
@@ -67,7 +67,7 @@ int32_t TCPServer::acceptConn(struct sockaddr* clientaddr){
     
 }
 
-int32_t TCPServer::handleRequest(int socketfd){
+int32_t TCPServer::handleRequest(int32_t socketfd){
     //4 bytes for the header
     int32_t len = 0;
     char readbuf[4 + MAX_MSGLEN];
@@ -103,7 +103,7 @@ int32_t TCPServer::handleRequest(int socketfd){
     //Write the buffer to the client
     return this->writeAll(socketfd, writebuf, len + 4);
 }
-//TODO: Add support for pipelining requests
+
 bool TCPServer::process_one_request(){
     if(this->inputbuf.size() < 4){
         return false;
@@ -124,29 +124,40 @@ bool TCPServer::process_one_request(){
     const char* request = reinterpret_cast<const char*>(inputbuf.data() + 4);
 
     std::cout << "Received Message: " << request << "\n";
+    buf_append(this->outputbuf, "Received Message", 16);    
+    buf_remove(this->inputbuf, 4 + len);
 
-    sendMsg(this->sockfd, "Received Message", 16);
     return true;
 } 
 
-bool TCPServer::send_outputbuf(int socketfd){
+bool TCPServer::send_from_outputbuf(int32_t  socketfd){
     if(this->blocking){
         std::cerr << "Called non-blocking send on a blocking socket" << std::endl;
         return false;
     }
 
+    if(this->outputbuf.size() == 0){
+        return true;
+    }
+
     int32_t bytes_sent = write(socketfd, this->outputbuf.data(), this->outputbuf.size());
+
+    if(bytes_sent < 0 && errno == EAGAIN){
+        std::cout << "Socket " << socketfd << " not ready to send data, try again later\n";
+        return true;
+    }
 
     if(bytes_sent < 0){
         std::cerr << "Error sending to socket" << socketfd << "\n";
         return false;
     }
+
     buf_remove(this->outputbuf, bytes_sent);
 
     return true;
 }
 
-bool TCPServer::recv_inputbuf(int socketfd, char* buf, size_t buflen){
+bool TCPServer::recv_to_inputbuf(int32_t socketfd, char* buf, size_t buflen){
     if(this->blocking){
         std::cerr << "Called non-blocking recv on a blocking socket" << std::endl;
         return false;
@@ -165,14 +176,28 @@ bool TCPServer::recv_inputbuf(int socketfd, char* buf, size_t buflen){
 
     //Appending received bytes to input buffer
     inputbuf.insert(inputbuf.end(), buf, buf + bytes_recv);
+    return true;
+}
 
-    return this->process_one_request();
+
+int32_t TCPServer::recvMsg(int32_t socketfd, char* buffer, size_t buffersize) {
+    if(this->blocking){
+        
+    }
+    
+    if(!this->recv_to_inputbuf(socketfd, buffer, buffersize)){
+        return -1;
+    }
+    if(!this->process_one_request()){
+        return -1;
+    }
+    return 0;
 }
 
 void TCPServer::buf_append(std::vector<uint8_t>& buf, const void* data, size_t len) {
     buf.insert(buf.end(), static_cast<const uint8_t*>(data), static_cast<const uint8_t*>(data) + len);
 }
 
-void TCPServer::buf_remove(std::vector<uint8_t>& buf,  size_t len) {
+void TCPServer::buf_remove(std::vector<uint8_t>& buf, size_t len) {
     buf.erase(buf.begin(), buf.begin() + len);
 }

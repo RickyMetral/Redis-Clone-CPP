@@ -22,12 +22,12 @@ TCPConnection::~TCPConnection(){
 void TCPConnection::setNonblockFd(int32_t socketfd){
     fcntl(socketfd, F_SETFL, fcntl(socketfd, F_GETFL, 0) | O_NONBLOCK);
 }
-void TCPConnection::sigChildHandler(int s)
+void TCPConnection::sigChildHandler(int32_t s)
 {
     (void)s; // quiet unused variable warning
 
     // waitpid() might overwrite errno, so we save and restore it:
-    int saved_errno = errno;
+    int32_t saved_errno = errno;
 
     while(waitpid(-1, NULL, WNOHANG) > 0);
 
@@ -35,12 +35,12 @@ void TCPConnection::sigChildHandler(int s)
 }
     
 
-int TCPConnection::initSocket(const char* ipaddr, const char* port){
+int32_t TCPConnection::initSocket(const char* ipaddr, const char* port){
     addrinfo *serverinfo, *p;
-    int yes = 1;
+    int32_t yes = 1;
     
 
-    int status = getaddrinfo(ipaddr, port, &this->hints, &serverinfo);
+    int32_t status = getaddrinfo(ipaddr, port, &this->hints, &serverinfo);
 
     if(status != 0){
         std::cerr << "gai error: " <<  gai_strerror(status) << std::endl;
@@ -79,7 +79,7 @@ int TCPConnection::initSocket(const char* ipaddr, const char* port){
     return this->sockfd;
 }
 
-int TCPConnection::getSock() const{
+int32_t TCPConnection::getSock() const{
     return this->sockfd;
 }
 
@@ -93,15 +93,15 @@ void* TCPConnection::getInAddrs(struct sockaddr *sa)
     return &(((struct sockaddr_in6*)sa)->sin6_addr);
 }
 
-int32_t TCPConnection::sendMsg(int socketfd, const void* message, size_t msglen){
+int32_t TCPConnection::sendMsg(int32_t socketfd, const void* message, size_t msglen){
     return send(socketfd, message, msglen, 0);
 }
 
-int32_t TCPConnection::recvMsg(int socketfd, char* buffer, size_t buffersize){
+int32_t TCPConnection::recvMsg(int32_t socketfd, char* buffer, size_t buffersize){
     return recv(socketfd, buffer, buffersize, 0);
 }
 
-bool TCPConnection::sendAll(int sockfd, const void* msg, size_t msglen){
+bool TCPConnection::sendAll(int32_t sockfd, const void* msg, size_t msglen){
     ssize_t total_sent = 0;
     ssize_t bytes_sent = 0;
     while(total_sent < msglen){
@@ -115,7 +115,7 @@ bool TCPConnection::sendAll(int sockfd, const void* msg, size_t msglen){
     return bytes_sent != 0 ? false: true;
 }
 
-bool TCPConnection::recvAll(int socketfd, char* buffer, size_t buffersize){
+bool TCPConnection::recvAll(int32_t socketfd, char* buffer, size_t buffersize){
     ssize_t bytes_recv = 0;
     while(buffersize > 0){
         bytes_recv = recv(socketfd, buffer, buffersize, 0);
@@ -129,7 +129,7 @@ bool TCPConnection::recvAll(int socketfd, char* buffer, size_t buffersize){
     return buffersize != 0 ? false: true;
 }
 
-bool TCPConnection::readAll(int socketfd, char *buffer, size_t buffersize){
+bool TCPConnection::readAll(int32_t socketfd, char *buffer, size_t buffersize){
     ssize_t bytes_recv = 0;
     while(buffersize > 0){
         bytes_recv = read(socketfd, buffer, buffersize);
@@ -143,7 +143,7 @@ bool TCPConnection::readAll(int socketfd, char *buffer, size_t buffersize){
     return buffersize != 0 ? false : true;
 }
 
-bool TCPConnection::writeAll(int socketfd, const void* message, size_t msglen){
+bool TCPConnection::writeAll(int32_t socketfd, const void* message, size_t msglen){
     ssize_t total_sent = 0;
     ssize_t bytes_sent = 0;
     while(total_sent < msglen){

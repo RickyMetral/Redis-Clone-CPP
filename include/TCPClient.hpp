@@ -4,10 +4,10 @@
 
 class TCPClient : public TCPConnection {
 private:
-    int establishEndpoint(int sockfd, struct addrinfo *p) override;//Wrapper to the syscall connect()
+    int32_t establishEndpoint(int32_t sockfd, struct addrinfo *p) override;//Wrapper to the syscall connect()
 
 public:
-    TCPClient(const char* ipaddr, const char* clientPort, int sock_family, bool block = true);//Sets sockfd to our client file descriptor. 
+    TCPClient(const char* ipaddr, const char* clientPort, int32_t sock_family, bool block = true);//Sets sockfd to our client file descriptor. 
     ~TCPClient() override;
     bool sendAll(const void* msg, size_t msglen);//Ensures to send all the bytes unless an error occurs. Returns -1 on fail, 0 on sucess
     bool recvAll(char* buffer, size_t buffersize);//Receives all the data sent. Returns -1 on fail, 0 on sucess
