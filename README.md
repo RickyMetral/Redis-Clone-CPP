@@ -1,7 +1,7 @@
 # Redis Clone in C++ ( STILL UNDER DEVELOPMENT)
 
 
-A lightweight Redis server clone benig implemented in C++ using epoll for high-performance I/O multiplexing and system socket libraries. This project demonstrates key-value store architecture with efficient concurrent client handling. 
+A lightweight Redis server clone being implemented in C++ using epoll for high-performance I/O multiplexing and system socket libraries. This project demonstrates key-value store architecture with efficient concurrent client handling. 
 
 
 ### Core Components
