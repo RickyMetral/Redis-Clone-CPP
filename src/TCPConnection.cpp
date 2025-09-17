@@ -73,10 +73,6 @@ int32_t TCPConnection::initSocket(const char* ipaddr, const char* port){
         exit(-1);
     }
 
-    if(this->blocking){
-        setNonblockFd(this->sockfd);
-    }
-
     return this->sockfd;
 }
 

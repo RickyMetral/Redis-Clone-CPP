@@ -1,7 +1,7 @@
 #include "TCPConnection.hpp"
 #include "TCPServer.hpp"
 
-TCPServer::TCPServer(const char* serverPort, int32_t sockFamily) : TCPConnection(sockFamily, AI_PASSIVE){
+TCPServer::TCPServer(const char* serverPort, int32_t sockFamily) : TCPConnection(sockFamily, AI_PASSIVE, true){
     struct sigaction sa;
     if(this->initSocket(NULL, serverPort) <= -1){
         std::cerr << "InitSocket Failed\n";

@@ -9,8 +9,10 @@ int main(int argc, char** argv){
         std::cerr << "Usage: ./client <ip_address>\n";
         return 1;
     }
-    TCPClient client(PORT, argv[1], AF_INET);
-    if(client.queryServer("Hello") != 0){//TODO Readall resource not working
+
+    TCPClient client(argv[1], PORT, AF_INET);
+
+    if(client.queryServer("Hello") != 0){
         perror("queryServer Failed");
         exit(1);
     }
