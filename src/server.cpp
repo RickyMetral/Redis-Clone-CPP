@@ -30,14 +30,12 @@ void epoll_callback(const struct epoll_event& event, Epoll* epoll, TCPServer* co
         }
         std::cout << "Added Connection " << s << " to Epoll" << std::endl;
         
-
     } else {
         // Data from existing client
         if(event.events & EPOLLIN && event.events & EPOLLOUT) {
             std::cout << "Handling Request From: " << event.data.fd << std::endl;
-            conn->handleRequest(event.data.fd);
+            conn->handleRequest(event.data.fd);//TODO Use buffers instead of recv/write all
         }
-
     }
 }
 
@@ -45,7 +43,7 @@ int main(){
     vector<struct epoll_event> events;
     struct epoll_event server_event;
 
-    TCPServer server(PORT, AF_INET, false);
+    TCPServer server(PORT, AF_INET);
 
     server_event.data.fd = server.getSock();
     server_event.events = EPOLLIN;

@@ -10,7 +10,7 @@ int main(int argc, char** argv){
         return 1;
     }
     TCPClient client(PORT, argv[1], AF_INET);
-    if(client.queryServer("Hello") != 0){
+    if(client.queryServer("Hello") != 0){//TODO Readall resource not working
         perror("queryServer Failed");
         exit(1);
     }

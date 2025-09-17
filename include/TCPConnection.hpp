@@ -26,9 +26,9 @@ protected:
     int32_t initSocket(const char* ipaddr, const char* port);//Returns a file descriptor for a new socket
     virtual int32_t establishEndpoint(int32_t sockfd, struct addrinfo *p) = 0;//Virtual Function used when initializing socket (Server binds/ Client connects)
     static void sigChildHandler(int32_t s);//Needs to be static for callback
-    virtual ~TCPConnection();
-    TCPConnection(size_t sock_family, size_t flags, bool block = true);//Creates an unconnected TCP server. Call queueconnections + accept to create an initial connection
     void setNonblockFd(int32_t socketfd); //Sets the passed fd to nonblock mode
+    TCPConnection(size_t sockFamily, size_t flags, bool block = true);//Creates an unconnected TCP server. Call queueconnections + accept to create an initial connection
+    virtual ~TCPConnection();
 
 public:
     int32_t getSock() const;

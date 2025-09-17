@@ -3,7 +3,7 @@
 
 
 class TCPClient : public TCPConnection {
-private:
+protected:
     int32_t establishEndpoint(int32_t sockfd, struct addrinfo *p) override;//Wrapper to the syscall connect()
 
 public:

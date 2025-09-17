@@ -2,12 +2,12 @@
 #include <stdio.h>
 
 
-TCPConnection::TCPConnection(size_t sock_family, size_t flags, bool block){
+TCPConnection::TCPConnection(size_t sockFamily, size_t flags, bool block){
     this->sockfd = -1;
     this->blocking = block;
 
     memset(&hints, 0, sizeof hints);//Zero out uninitialized vals
-    this->hints.ai_family = sock_family;//IPV4 = AF_INET or IPV6 = AF_INET6
+    this->hints.ai_family = sockFamily;//IPV4 = AF_INET or IPV6 = AF_INET6
     this->hints.ai_socktype = SOCK_STREAM;//SOCK_STREAM for TCP (UDP = SOCK_DGRAM)
     this->hints.ai_flags = flags; 
 }
@@ -22,6 +22,7 @@ TCPConnection::~TCPConnection(){
 void TCPConnection::setNonblockFd(int32_t socketfd){
     fcntl(socketfd, F_SETFL, fcntl(socketfd, F_GETFL, 0) | O_NONBLOCK);
 }
+
 void TCPConnection::sigChildHandler(int32_t s)
 {
     (void)s; // quiet unused variable warning
@@ -39,7 +40,6 @@ int32_t TCPConnection::initSocket(const char* ipaddr, const char* port){
     addrinfo *serverinfo, *p;
     int32_t yes = 1;
     
-
     int32_t status = getaddrinfo(ipaddr, port, &this->hints, &serverinfo);
 
     if(status != 0){
@@ -72,6 +72,7 @@ int32_t TCPConnection::initSocket(const char* ipaddr, const char* port){
         std::cerr << "Falied to establish endpoint\n";
         exit(-1);
     }
+
     if(this->blocking){
         setNonblockFd(this->sockfd);
     }
