@@ -31,10 +31,13 @@ void epoll_callback(const struct epoll_event& event, Epoll* epoll, TCPServer* co
         std::cout << "Added Connection " << s << " to Epoll" << std::endl;
         
     } else {
-        // Data from existing client
+        //If server/client are ready to receive/send we handle one request
         if(event.events & EPOLLIN && event.events & EPOLLOUT) {
-            std::cout << "Handling Request From: " << event.data.fd << std::endl;
-            conn->handleRequest(event.data.fd);//TODO Use buffers instead of recv/write all
+            char buf[1];
+            if(recv(event.data.fd, buf, 1, MSG_PEEK | MSG_DONTWAIT) > 0){
+                std::cout << "Handling Request From: " << event.data.fd << std::endl;
+                conn->handleRequest(event.data.fd);//TODO: Will hang after one connection is made and closed. Blocking I/O
+            }
         }
     }
 }

@@ -130,9 +130,13 @@ bool TCPConnection::readAll(int32_t socketfd, char *buffer, size_t buffersize){
     ssize_t bytes_recv = 0;
     while(buffersize > 0){
         bytes_recv = read(socketfd, buffer, buffersize);
+        if(bytes_recv == 0){
+            std::cerr << "Reached end of read buffer before intended" << std::endl;
+            return false;
+        }
         if(bytes_recv < 0){
             perror("Read All");
-            break;
+            return false;
         }
         buffersize -= bytes_recv;
         buffer += bytes_recv;

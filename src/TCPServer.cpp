@@ -64,8 +64,8 @@ int32_t TCPServer::handleRequest(int32_t socketfd){
     int32_t len = 0;
     char readbuf[4 + MAX_MSGLEN];
     //Read the msg len from header of the client
-    int32_t err = this->readAll(socketfd, readbuf, 4);
-    if(err <= -1){
+    bool err = this->readAll(socketfd, readbuf, 4);
+    if(err == false){
         perror("HandlRequest->readall");
         exit(1);
     }
@@ -73,9 +73,9 @@ int32_t TCPServer::handleRequest(int32_t socketfd){
 
     //Read the rest of the message
     err = this->readAll(socketfd, &readbuf[4], len);
-    if(err <= -1){
+    if(err == false){
         perror("Handle_Request->Readall");
-        return err;
+        return -1;
     } 
     if(len > MAX_MSGLEN){
         std::cerr << "Received Message len too long" << std::endl;
