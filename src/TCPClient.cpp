@@ -85,4 +85,4 @@ int32_t TCPClient::queryServer(const char* msg){
     readbuf[len+4+1] = '\0';//Null terminate buffer
     std::cout << "Received: " << &readbuf[4] << std::endl;
     return 0;
-} 
+}

@@ -1,5 +1,11 @@
 *bin/*
-*build/*
+build/
 *.out
 *examples/
 .vscode
+
+
+# **********CMAKE**********************
+cmake_install.cmake
+CMakeCache.txt
+CMakeFiles

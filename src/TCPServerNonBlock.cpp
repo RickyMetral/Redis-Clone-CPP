@@ -1,4 +1,5 @@
 #include "TCPServerNonBlock.hpp"
+#include <cassert>
 
 TCPServerNonBlock::TCPServerNonBlock(const char* serverPort, int32_t sockFamily) : TCPServer(serverPort, sockFamily){
     this->setNonblockFd(this->sockfd);
@@ -25,7 +26,8 @@ int32_t TCPServerNonBlock::acceptConn(struct sockaddr* clientaddr){
 int32_t TCPServerNonBlock::establishEndpoint(int32_t socketfd, struct addrinfo *p){
     return bind(socketfd, p->ai_addr, p->ai_addrlen);
 }
-bool TCPServerNonBlock::processRequest(){
+
+bool TCPServerNonBlock::processOneRequest(){
     if(this->inputbuf.size() < 4){
         return false;
     }
@@ -38,6 +40,11 @@ bool TCPServerNonBlock::processRequest(){
         return false;
     }
 
+    if(len >= 0){
+        std::cerr << "Inputbuf Empty" << std::endl;
+        return true;
+    }
+
     //We need to read again since message hasn't been fully put into the buf
     if(4 + len > this->inputbuf.size()){
         return false;
@@ -47,17 +54,13 @@ bool TCPServerNonBlock::processRequest(){
 
     std::cout << "Received Message: " << request << "\n";
     bufAppend(this->outputbuf, "Received Message", 16);    
+
     bufRemove(this->inputbuf, 4 + len);
 
     return true;
 } 
 
 bool TCPServerNonBlock::sendOutputbuf(int32_t  socketfd){
-    if(this->blocking){
-        std::cerr << "Called non-blocking send on a blocking socket" << std::endl;
-        return false;
-    }
-
     if(this->outputbuf.size() == 0){
         return true;
     }
@@ -79,13 +82,63 @@ bool TCPServerNonBlock::sendOutputbuf(int32_t  socketfd){
     return true;
 }
 
-bool TCPServerNonBlock::recvInputbuf(int32_t socketfd, char* buf, size_t buflen){
-    if(this->blocking){
-        std::cerr << "Called non-blocking recv on a blocking socket" << std::endl;
+//TODO Put the code in the handle read and only receive to inputbuf
+bool TCPServerNonBlock::recvInputbuf(int32_t socketfd){
+    //TODO Finsh  
+    int8_t buf[MAX_MSGLEN];
+    ssize_t bytes_recv = read(socketfd, buf, sizeof(buf));
+
+    if(bytes_recv < 0 && errno == EAGAIN){
         return false;
     }
 
-    int32_t bytes_recv = read(socketfd, buf, buflen);
+    if(bytes_recv < 0){
+        perror("recvInputbuf_read->read()");
+    }
+
+    if(bytes_recv == 0){
+        if(this->outputbuf.size() == 0){
+            std::cerr << "Client Closed" << std::endl;;
+        }
+        else{
+            std::cerr << "Unexpected EOF" << std::endl;
+        }
+    }
+
+    bufAppend(this->inputbuf, buf, bytes_recv);
+
+    return true;
+}
+
+//TODO Finish Function
+bool TCPServerNonBlock::handleRead(int32_t socketfd){
+    int8_t buf[MAX_MSGLEN];
+    ssize_t bytes_recv = read(socketfd, buf, sizeof(buf));
+
+    if(bytes_recv < 0 && errno == EAGAIN){
+        return false;
+    }
+
+    if(bytes_recv < 0){
+        perror("handleRead->read()");
+    }
+
+    if(bytes_recv == 0){
+        if(this->outputbuf.size() == 0){
+            std::cerr << "Client Closed" << std::endl;;
+        }
+        else{
+            std::cerr << "Unexpected EOF" << std::endl;
+        }
+    }
+
+    bufAppend(this->inputbuf, buf, bytes_recv);
+
+    while(this->processOneRequest()){
+        if(this->outputbuf.size() > 0){
+            handleWrite(socketfd);
+        }
+    }
 
     if(bytes_recv < 0){
         std::cerr << "Error receiving from socket" << socketfd << "\n";
@@ -99,8 +152,22 @@ bool TCPServerNonBlock::recvInputbuf(int32_t socketfd, char* buf, size_t buflen)
     //Appending received bytes to input buffer
     inputbuf.insert(inputbuf.end(), buf, buf + bytes_recv);
     return true;
+
 }
 
+bool TCPServerNonBlock::handleWrite(int32_t socketfd){
+    assert(outputbuf.size() > 0);
+    ssize_t bytes_sent = write(this->sockfd, outputbuf.data(), outputbuf.size());
+
+    if(bytes_sent < 0){
+        perror("hande_write");
+        return false;
+    }
+
+    bufRemove(outputbuf, bytes_sent);
+    
+    return true;
+}
 
 void TCPServerNonBlock::bufAppend(std::vector<uint8_t>& buf, const void* data, size_t len) {
     buf.insert(buf.end(), static_cast<const uint8_t*>(data), static_cast<const uint8_t*>(data) + len);

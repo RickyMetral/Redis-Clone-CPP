@@ -38,7 +38,7 @@ public:
     bool sendAll(int32_t socketfd, const void* message, size_t msglen);//Ensures to send all the bytes unless an error occurs. Returns -1 on fail, 0 on success
     bool recvAll(int32_t socketfd, char* buffer, size_t buffersize);//Receives data until buffersize num bytes is read. Returns -1 on fail, 0 on success
     bool writeAll(int32_t socketfd, const void* message, size_t msglen);//Writes data until buffersize msglen num bytes is sent. Returns -1 on fail, 0 on success
-    bool readAll(int32_t socketfd, char* buffer, size_t buffersize);//Receives data until buffersize num bytes is read. Returns -1 on fail, 0 on success
+    bool readAll(int32_t socketfd, char* buffer, size_t buffersize);//Receives data until buffersize num bytes is read. Returns -1 on fail, 0 on success, 1 on empty buffer
 };
 
 #endif
