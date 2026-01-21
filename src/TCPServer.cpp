@@ -48,7 +48,7 @@ int32_t TCPServer::establishEndpoint(int32_t socketfd, struct addrinfo *p){
 void TCPServer::queueConns(){
     if (listen(this->sockfd, BACKLOG) == -1){
         perror("listen");
-        exit(1);
+        safeShutdown();
     }
 }
 
@@ -67,7 +67,7 @@ int32_t TCPServer::handleRequest(int32_t socketfd){
     bool err = this->readAll(socketfd, readbuf, 4);
     if(err == false){
         perror("HandlRequest->readall");
-        exit(1);
+        safeShutdown();
     }
     memcpy(&len, readbuf, 4);
 
@@ -94,4 +94,10 @@ int32_t TCPServer::handleRequest(int32_t socketfd){
 
     //Write the buffer to the client
     return this->writeAll(socketfd, writebuf, len + 4);
+}
+
+//TODO: Correctly implement shutdown procedures instead of just exiting
+void TCPServer::safeShutdown(){
+    exit(-1);
+    return;
 }

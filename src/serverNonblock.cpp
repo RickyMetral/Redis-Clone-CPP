@@ -35,12 +35,18 @@ void epoll_callback(const struct epoll_event& event, Epoll* epoll, TCPServerNonB
         // Data from existing client
         if(event.events & EPOLLIN){
             std::cerr << "Reading from socket: "<< event.data.fd << std::endl;
-            conn->handleRead(static_cast<int32_t>(event.data.fd));//TODO Check for EAGAIN
+            if(!conn->handleRead(static_cast<int32_t>(event.data.fd))){
+                perror("Handle_read");
+                conn->safeShutdown();
+            }
         }
             
         if(event.events & EPOLLOUT) {
             std::cerr << "Writing to Socket: "<< event.data.fd << std::endl;
-            conn->handleWrite(static_cast<int32_t>(event.data.fd));//TODO Check for EAGAIN
+            if(!conn->handleWrite(static_cast<int32_t>(event.data.fd))){
+                perror("Handle_write");
+                conn->safeShutdown();
+            }
         }
     }
 }

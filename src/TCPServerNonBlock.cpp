@@ -89,11 +89,12 @@ bool TCPServerNonBlock::recvInputbuf(int32_t socketfd){
     ssize_t bytes_recv = read(socketfd, buf, sizeof(buf));
 
     if(bytes_recv < 0 && errno == EAGAIN){
-        return false;
+        return true;
     }
 
     if(bytes_recv < 0){
         perror("recvInputbuf_read->read()");
+        return false;
     }
 
     if(bytes_recv == 0){
@@ -120,7 +121,8 @@ bool TCPServerNonBlock::handleRead(int32_t socketfd){
     }
 
     if(bytes_recv < 0){
-        perror("handleRead->read()");
+        std::cerr << "Error receiving from socket" << std::endl;
+        return false;
     }
 
     if(bytes_recv == 0){
@@ -140,15 +142,6 @@ bool TCPServerNonBlock::handleRead(int32_t socketfd){
         }
     }
 
-    if(bytes_recv < 0){
-        std::cerr << "Error receiving from socket" << socketfd << "\n";
-        return false;
-    }
-
-    if(bytes_recv == 0){
-        return true;
-    }
-
     //Appending received bytes to input buffer
     inputbuf.insert(inputbuf.end(), buf, buf + bytes_recv);
     return true;
@@ -158,6 +151,10 @@ bool TCPServerNonBlock::handleRead(int32_t socketfd){
 bool TCPServerNonBlock::handleWrite(int32_t socketfd){
     assert(outputbuf.size() > 0);
     ssize_t bytes_sent = write(this->sockfd, outputbuf.data(), outputbuf.size());
+
+    if(bytes_sent < 0 & errno == EAGAIN){
+        return true;
+    }
 
     if(bytes_sent < 0){
         perror("hande_write");
@@ -175,4 +172,9 @@ void TCPServerNonBlock::bufAppend(std::vector<uint8_t>& buf, const void* data, s
 
 void TCPServerNonBlock::bufRemove(std::vector<uint8_t>& buf, size_t len) {
     buf.erase(buf.begin(), buf.begin() + len);
+}
+
+void TCPServerNonBlock::safeShutdown(){
+    exit(1);
+    return;
 }

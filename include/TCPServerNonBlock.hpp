@@ -22,4 +22,5 @@ public:
     int32_t acceptConn(struct sockaddr* clientaddr) override;//Accepts one connection from the connection queue, returns -1 on fail, does not block I/O
     bool handleRead(int32_t socketfd);//Handles reading from socketfd to inputbuf. Returns false on fail
     bool handleWrite(int32_t socketfd);//Handles writing to socketfd from outputbuf. Returns false on fail
+    void safeShutdown() override;//Shuts down the server safely | TODO: Finish implementation
 };

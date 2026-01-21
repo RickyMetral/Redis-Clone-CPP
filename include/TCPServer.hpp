@@ -16,4 +16,5 @@ public:
     void queueConns();//Calls listen and queues any incoming connections, exits on fail
     virtual int32_t acceptConn(struct sockaddr* clientaddr);//Accepts one connection from the connection queue, returns -1 on fail, does not blocking I/O
     int32_t handleRequest(int32_t socketfd);//Receives clients msg and sends ACK. Blocks I/O
+    virtual void safeShutdown();//Shuts down the server safely | TODO: Finish implementation
 };
