@@ -36,7 +36,8 @@ Epoll::Epoll(struct epoll_event event_arr[], int32_t& num_events){
             std::cout << "Could not add file descriptor: " << event_arr[i].data.fd << "Not a valid fd." << std::endl;
             continue;
         }
-        if(epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, event_arr[i].data.fd, &event_arr[i]) == -1){
+
+        if(!addfd(event_arr[i].data.fd, event_arr[i])){
             perror("epoll_ctl failed");
             exit(1);
         }
@@ -46,14 +47,13 @@ Epoll::Epoll(struct epoll_event event_arr[], int32_t& num_events){
 Epoll::~Epoll(){
     printf("Closing Epoll fd");
     if(close(this->epoll_fd)){
-        fprintf(stderr, "Failed to close epoll file descriptor\n");
+        std::cerr << "Failed to close epoll file descriptor\n" << std::endl;
         exit(1);
     }
 }
 
-bool Epoll::addfd(int32_t fd, struct epoll_event event){
+bool Epoll::addfd(int32_t fd, struct epoll_event& event){
     if(epoll_ctl(this->epoll_fd, EPOLL_CTL_ADD, fd, &event) == -1){
-        perror("addfd->epoll_ctl failed");
         return false;
     }
     return true;
@@ -61,7 +61,6 @@ bool Epoll::addfd(int32_t fd, struct epoll_event event){
 
 bool Epoll::removefd(int32_t fd){
     if(epoll_ctl(this->epoll_fd, EPOLL_CTL_DEL, fd, NULL) == -1){
-        perror("removefd->epoll_ctl failed");
         return false;
     }
     return true;

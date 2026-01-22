@@ -48,7 +48,7 @@ public:
     Epoll(vector<struct epoll_event> event_arr);//Adds all events and fds to the epoll instance
     Epoll(struct epoll_event event_arr[], int32_t& num_events);//Adds all events and fds to the epoll instance
     ~Epoll();//Closes epoll_fd. Does NOT close fds under epoll watch
-    bool addfd(int32_t fd, struct epoll_event event);
+    bool addfd(int32_t fd, struct epoll_event& event);
     bool removefd(int32_t fd);
     int32_t getEpollfd();
 
